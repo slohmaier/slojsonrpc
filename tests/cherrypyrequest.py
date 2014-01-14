@@ -21,6 +21,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+import json
 import unittest
 from slojsonrpc import SLOJSONRPC
 from .api import sessionfaker
@@ -48,18 +49,21 @@ class JSONRPCTestCherryPy(unittest.TestCase):
         cherrypy.request = fake_request(
             'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
         self.assertEqual(
-            '{"jsonrpc": "2.0", "id": 1, "result": "pong"}', self.jsonrpc())
+            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+            json.loads(self.jsonrpc()))
 
     def test_invalid_method(self):
         import cherrypy
         cherrypy.request = fake_request(
             'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
         self.assertEqual(
-            '{"jsonrpc": "2.0", "id": 1, "result": "pong"}', self.jsonrpc())
+            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+            json.loads(self.jsonrpc()))
         cherrypy.request = fake_request(
             'POST', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
         self.assertEqual(
-            '{"jsonrpc": "2.0", "id": 1, "result": "pong"}', self.jsonrpc())
+            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+            json.loads(self.jsonrpc()))
         cherrypy.request = fake_request(
             'PUTT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
         self.assertEqual('Method "PUTT" not allowed.', self.jsonrpc())
