@@ -28,17 +28,17 @@ import logging
 import traceback
 
 
-def SLOJSONRPCNotification(fct):
+def SLOSLOJSONRPCNotification(fct):
     '''
-    Decorate a JSONRPC method to be a notification and so have no return value.
+    Decorate a SLOJSONRPC method to be a notification and so have no return value.
     '''
-    fct.__SLOJSONRPCNotification__ = True
+    fct.__SLOSLOJSONRPCNotification__ = True
     return fct
 
 
-class SLOJSONRPCError(BaseException):
+class SLOSLOJSONRPCError(BaseException):
     '''
-    Reprents an JSONRPC error code.
+    Reprents an SLOJSONRPC error code.
     '''
 
     #messages for standard errors
@@ -52,32 +52,32 @@ class SLOJSONRPCError(BaseException):
 
     def __init__(self, errorcode, message=None):
         '''
-        create a SLOJSONRPCError
+        create a SLOSLOJSONRPCError
 
         errorcode - errcode as integer
         message - message for the error (default: None)
         '''
         self.errorcode = errorcode
 
-        if not errorcode in SLOJSONRPCError._default_messages \
+        if not errorcode in SLOSLOJSONRPCError._default_messages \
            and (errorcode > -32000 or errorcode < -32099):
-            raise SLOJSONRPCError(-32603)
+            raise SLOSLOJSONRPCError(-32603)
 
-        if errorcode in SLOJSONRPCError._default_messages:
-            self.message = SLOJSONRPCError._default_messages[errorcode]
+        if errorcode in SLOSLOJSONRPCError._default_messages:
+            self.message = SLOSLOJSONRPCError._default_messages[errorcode]
         else:
             self.message = message
 
     def to_json(self, id=None):
         '''
-        convert SLOJSONRPCError to a json-dictionary object
+        convert SLOSLOJSONRPCError to a json-dictionary object
 
         id - message id (default: None)
 
         returns json-dictionary
         '''
         return {
-            'jsonrpc': '2.0',
+            'SLOJSONRPC': '2.0',
             'error': {
                 'code': self.errorcode,
                 'message': self.message
@@ -86,18 +86,18 @@ class SLOJSONRPCError(BaseException):
         }
 
 
-class JSONRPC(object):
+class SLOJSONRPC(object):
     '''
-    JSONRPC implementation.
+    SLOJSONRPC implementation.
 
     Can be a cherrypy url handler:
     class Root:
-        jsonrpc = JSONRPC(sessionmaker)
+        SLOJSONRPC = SLOJSONRPC(sessionmaker)
     '''
 
     def __init__(self, sessionmaker):
         '''
-        create a new JSONRPC
+        create a new SLOJSONRPC
 
         sessionmaker - default argument for all methods
         '''
@@ -129,15 +129,15 @@ class JSONRPC(object):
                 except AttributeError:
                     pass
                 else:
-                    logging.debug('JSONRPC: Found Method: "%s"' % method)
+                    logging.debug('SLOJSONRPC: Found Method: "%s"' % method)
                     self._methods[method] = {
                         'argspec': inspect.getargspec(fct),
                         'fct': fct
                     }
 
-    #keys a jsonrpc-dict must have
-    _min_keys = ['jsonrpc', 'method']
-    #keys a jsonrpc-dict can have
+    #keys a SLOJSONRPC-dict must have
+    _min_keys = ['SLOJSONRPC', 'method']
+    #keys a SLOJSONRPC-dict can have
     _optional_keys = ['params', 'id']
     #keys that are allowed
     _allowed_keys = _min_keys + _optional_keys
@@ -145,54 +145,54 @@ class JSONRPC(object):
     @staticmethod
     def _validate_format(req):
         '''
-        Validate jsonrpc compliance of a jsonrpc-dict.
+        Validate SLOJSONRPC compliance of a SLOJSONRPC-dict.
 
-        req - the request as a jsonrpc-dict
+        req - the request as a SLOJSONRPC-dict
 
-        raises SLOJSONRPCError on validation error
+        raises SLOSLOJSONRPCError on validation error
         '''
         #check for all required keys
-        for key in JSONRPC._min_keys:
+        for key in SLOJSONRPC._min_keys:
             if not key in req:
-                logging.debug('JSONRPC: Fmt Error: Need key "%s"' % key)
-                raise SLOJSONRPCError(-32600)
+                logging.debug('SLOJSONRPC: Fmt Error: Need key "%s"' % key)
+                raise SLOSLOJSONRPCError(-32600)
 
         #check all keys if allowed
         for key in req.keys():
-            if not key in JSONRPC._allowed_keys:
-                logging.debug('JSONRPC: Fmt Error: Not allowed key "%s"' % key)
-                raise SLOJSONRPCError(-32600)
+            if not key in SLOJSONRPC._allowed_keys:
+                logging.debug('SLOJSONRPC: Fmt Error: Not allowed key "%s"' % key)
+                raise SLOSLOJSONRPCError(-32600)
 
-        #needs to be jsonrpc 2.0
-        if req['jsonrpc'] != '2.0':
-            logging.debug('JSONRPC: Fmt Error: "jsonrpc" needs to be "2.0"')
-            raise SLOJSONRPCError(-32600)
+        #needs to be SLOJSONRPC 2.0
+        if req['SLOJSONRPC'] != '2.0':
+            logging.debug('SLOJSONRPC: Fmt Error: "SLOJSONRPC" needs to be "2.0"')
+            raise SLOSLOJSONRPCError(-32600)
 
     def _validate_params(self, req):
         '''
-        Validate parameters of a jsonrpc-request.
+        Validate parameters of a SLOJSONRPC-request.
 
-        req - request as a jsonrpc-dict
+        req - request as a SLOJSONRPC-dict
 
-        raises SLOJSONRPCError on validation error
+        raises SLOSLOJSONRPCError on validation error
         '''
 
         #does the method exist?
         method = req['method']
         if not method in self._methods:
-            raise SLOJSONRPCError(-32601)
+            raise SLOSLOJSONRPCError(-32601)
         fct = self._methods[method]['fct']
 
-        #'id' is only needed for none SLOJSONRPCNotification's
+        #'id' is only needed for none SLOSLOJSONRPCNotification's
         try:
-            getattr(fct, '__SLOJSONRPCNotification__')
+            getattr(fct, '__SLOSLOJSONRPCNotification__')
             if 'id' in req:
-                logging.debug('JSONRPC: Fmt Error: no id for SLOJSONRPCNotifications')
-                raise SLOJSONRPCError(-32602)
+                logging.debug('SLOJSONRPC: Fmt Error: no id for SLOSLOJSONRPCNotifications')
+                raise SLOSLOJSONRPCError(-32602)
         except AttributeError:
             if not 'id' in req:
-                logging.debug('JSONRPC: Fmt Error: Need an id for non SLOJSONRPCNotifications')
-                raise SLOJSONRPCError(-32602)
+                logging.debug('SLOJSONRPC: Fmt Error: Need an id for non SLOSLOJSONRPCNotifications')
+                raise SLOSLOJSONRPCError(-32602)
 
         #get arguments and defaults for the python-function representing
         # the method
@@ -213,40 +213,40 @@ class JSONRPC(object):
 
         #check if we need paremeters and there are none, then error
         if len(required) > 0 and 'params' not in req:
-            logging.debug('JSONRPC: Parameter Error: More than zero params required')
-            raise SLOJSONRPCError(-32602)
+            logging.debug('SLOJSONRPC: Parameter Error: More than zero params required')
+            raise SLOSLOJSONRPCError(-32602)
 
         if 'params' in req:
             #parameters must be a dict if there is more then one
             if not isinstance(req['params'], dict) and len(required) > 1:
-                logging.debug('JSONRPC: Parameter Error: "params" must be a dictionary')
-                raise SLOJSONRPCError(-32602)
+                logging.debug('SLOJSONRPC: Parameter Error: "params" must be a dictionary')
+                raise SLOSLOJSONRPCError(-32602)
 
             if isinstance(req['params'], dict):
                 #check if required parameters are there
                 for key in required:
                     if not key in req['params']:
-                        logging.debug('JSONRPC: Parameter Error: Required key "%s" is missing' % key)
-                        raise SLOJSONRPCError(-32602)
+                        logging.debug('SLOJSONRPC: Parameter Error: Required key "%s" is missing' % key)
+                        raise SLOSLOJSONRPCError(-32602)
 
                 #check if parameters are given that do not exist in the method
                 for key in req['params']:
                     if not key in required:
-                        logging.debug('JSONRPC: Parameter Error: Key is not allowed "%s"' % key)
-                        raise SLOJSONRPCError(-32602)
+                        logging.debug('SLOJSONRPC: Parameter Error: Key is not allowed "%s"' % key)
+                        raise SLOSLOJSONRPCError(-32602)
 
     def handle_request(self, req, validate=True):
         '''
-        handle a jsonrpc request
+        handle a SLOJSONRPC request
 
-        req - request as jsonrpc-dict
+        req - request as SLOJSONRPC-dict
         validate - validate the request? (default: True)
 
-        returns jsonrpc-dict with result or error
+        returns SLOJSONRPC-dict with result or error
         '''
 
         #result that will be filled and returned
-        res = {'jsonrpc': '2.0', 'id': -1, 'result': None}
+        res = {'SLOJSONRPC': '2.0', 'id': -1, 'result': None}
 
         logging.debug('')
         logging.debug('--------------------REQUEST' +
@@ -269,7 +269,7 @@ class JSONRPC(object):
 
             #check if request is a notification
             try:
-                getattr(self._methods[method]['fct'], '__SLOJSONRPCNotification__')
+                getattr(self._methods[method]['fct'], '__SLOSLOJSONRPCNotification__')
                 notification = True
             except AttributeError:
                 notification = False
@@ -284,12 +284,12 @@ class JSONRPC(object):
                     res['result'] = fct(session, req['params'])
             else:
                 res['result'] = self._methods[method]['fct'](session)
-        except SLOJSONRPCError as e:
+        except SLOSLOJSONRPCError as e:
             res = e.to_json(req.get('id', None))
         except:
             logging.debug('Uncaught Exception:')
             logging.debug('-------------------\n' + traceback.format_exc())
-            res = SLOJSONRPCError(-32603).to_json(req.get('id', None))
+            res = SLOSLOJSONRPCError(-32603).to_json(req.get('id', None))
 
         session.close()
 
@@ -311,21 +311,21 @@ class JSONRPC(object):
 
     def handle_string(self, strreq):
         '''
-        Handle a string representing a jsonrpc-request
+        Handle a string representing a SLOJSONRPC-request
 
-        strreq - jsonrpc-request as a string
+        strreq - SLOJSONRPC-request as a string
 
-        returns jsonrpc-response as a string
+        returns SLOJSONRPC-response as a string
         '''
 
-        #convert to jsonrpc-dict
+        #convert to SLOJSONRPC-dict
         req = None
         try:
             req = json.loads(strreq)
         except:
-            logging.debug('JSONRPC: Format Exception:')
+            logging.debug('SLOJSONRPC: Format Exception:')
             logging.debug('-----------------\n' + traceback.format_exc())
-            return json.dumps(SLOJSONRPCError(-32700).to_json())
+            return json.dumps(SLOSLOJSONRPCError(-32700).to_json())
 
         #handle single request
         if isinstance(req, dict):
@@ -334,13 +334,13 @@ class JSONRPC(object):
         elif isinstance(req, list):
             for r in req:
                 if not isinstance(r, dict):
-                    logging.debug('JSONRPC: Fmt Error: Item ' +
+                    logging.debug('SLOJSONRPC: Fmt Error: Item ' +
                                   '"%s" in request is no dictionary.' % str(r))
-                    return json.dumps(SLOJSONRPCError(-32700).to_json())
+                    return json.dumps(SLOSLOJSONRPCError(-32700).to_json())
                 try:
                     self._validate_format(r)
                     self._validate_params(r)
-                except SLOJSONRPCError as e:
+                except SLOSLOJSONRPCError as e:
                     return json.dumps(e.to_json(r.get('id', None)))
 
             res = []
@@ -349,7 +349,7 @@ class JSONRPC(object):
             return json.dumps(res)
         #invalid request
         else:
-            return json.dumps(SLOJSONRPCError(-32700).to_json())
+            return json.dumps(SLOSLOJSONRPCError(-32700).to_json())
 
     #mark as exposed for cherrypy
     exposed = True
