@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
     name='slojsonrpc',
     packages=['slojsonrpc'],
-    version=1.0,
+    version=0.1,
     description='Universal JSONrpc handler, that maps class-methods to jsonrpc-methods.',
     author='Stefan Lohmaier',
     author_email='stefan.lohmaier@stefanlohmaier.de',
