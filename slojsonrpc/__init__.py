@@ -152,14 +152,14 @@ class SLOJSONRPC(object):
         raises SLOJSONRPCError on validation error
         '''
         #check for all required keys
-        for key in JSONRPC._min_keys:
+        for key in SLOJSONRPC._min_keys:
             if not key in req:
                 logging.debug('JSONRPC: Fmt Error: Need key "%s"' % key)
                 raise SLOJSONRPCError(-32600)
 
         #check all keys if allowed
         for key in req.keys():
-            if not key in JSONRPC._allowed_keys:
+            if not key in SLOJSONRPC._allowed_keys:
                 logging.debug('JSONRPC: Fmt Error: Not allowed key "%s"' % key)
                 raise SLOJSONRPCError(-32600)
 
