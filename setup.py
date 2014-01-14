@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 setup(
     name='slojsonrpc',
     packages=['slojsonrpc'],
@@ -7,6 +7,8 @@ setup(
     author='Stefan Lohmaier',
     url='https://github.com/StefanLohmaier/slojsonrpc',
     keywords=['jsonrpc'],
+    test_suite='tests',
+    install_requires='cherrypy',
     classifiers=[
         'Programming Language :: Python',
         'License :: OSI Approved :: MIT License',
