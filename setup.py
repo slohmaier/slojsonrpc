@@ -5,6 +5,7 @@ setup(
     version=1.0,
     description='Universal JSONrpc handler, that maps class-methods to jsonrpc-methods.',
     author='Stefan Lohmaier',
+    author_email='stefan.lohmaier@stefanlohmaier.de',
     url='https://github.com/StefanLohmaier/slojsonrpc',
     keywords=['jsonrpc'],
     test_suite='tests',
