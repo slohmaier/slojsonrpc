@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
     name='slojsonrpc',
     packages=['slojsonrpc'],
-    version=0.1,
+    version='0.1',
     description='Universal JSONrpc handler, that maps class-methods to jsonrpc-methods.',
     author='Stefan Lohmaier',
     author_email='stefan.lohmaier@stefanlohmaier.de',
@@ -10,6 +10,7 @@ setup(
     keywords=['jsonrpc'],
     test_suite='tests',
     install_requires='cherrypy',
+    download_url='https://github.com/StefanLohmaier/slojsonrpc/archive/0.1.zip',
     classifiers=[
         'Programming Language :: Python',
         'License :: OSI Approved :: MIT License',
