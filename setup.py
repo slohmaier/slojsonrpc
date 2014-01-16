@@ -9,7 +9,6 @@ setup(
     url='https://github.com/StefanLohmaier/slojsonrpc',
     keywords=['jsonrpc'],
     test_suite='tests',
-    install_requires='cherrypy',
     download_url='https://github.com/StefanLohmaier/slojsonrpc/archive/0.1.zip',
     classifiers=[
         'Programming Language :: Python',

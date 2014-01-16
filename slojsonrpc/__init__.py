@@ -21,7 +21,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-import cherrypy
 import inspect
 import json
 import logging
@@ -351,12 +350,20 @@ class SLOJSONRPC(object):
         else:
             return json.dumps(SLOJSONRPCError(-32700).to_json())
 
-    #mark as exposed for cherrypy
-    exposed = True
 
-    #default handler for cherrypy
-    def __call__(self):
+try:
+    import cherrypy
+    #mark as exposed for cherrypy
+    SLOJSONRPC.exposed = True
+
+        #default handler for cherrypy
+    def __slojsonrpccall__(self):
         if cherrypy.request.method in ['POST', 'PUT']:
             return self.handle_string(cherrypy.request.body.read())
         else:
             return 'Method "%s" not allowed.' % cherrypy.request.method
+
+    SLOJSONRPC.__call__ = __slojsonrpccall__
+
+except:
+    pass

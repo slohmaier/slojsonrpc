@@ -26,44 +26,45 @@ import unittest
 from slojsonrpc import SLOJSONRPC
 from .api import sessionfaker
 
+try:
+    import cherrypy
 
-class fake_request:
-        def __init__(self, method, body):
-            self.method = method
+    class fake_request:
+            def __init__(self, method, body):
+                self.method = method
 
-            class fake_body:
-                def __init__(self, body):
-                    self.body = body
+                class fake_body:
+                    def __init__(self, body):
+                        self.body = body
 
-                def read(self):
-                    return self.body
-            self.body = fake_body(body)
+                    def read(self):
+                        return self.body
+                self.body = fake_body(body)
 
+    class JSONRPCTestCherryPy(unittest.TestCase):
+        def setUp(self):
+            self.jsonrpc = SLOJSONRPC(sessionfaker())
 
-class JSONRPCTestCherryPy(unittest.TestCase):
-    def setUp(self):
-        self.jsonrpc = SLOJSONRPC(sessionfaker())
+        def test_request(self):
+            cherrypy.request = fake_request(
+                'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+            self.assertEqual(
+                json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+                json.loads(self.jsonrpc()))
 
-    def test_request(self):
-        import cherrypy
-        cherrypy.request = fake_request(
-            'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-        self.assertEqual(
-            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
-            json.loads(self.jsonrpc()))
-
-    def test_invalid_method(self):
-        import cherrypy
-        cherrypy.request = fake_request(
-            'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-        self.assertEqual(
-            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
-            json.loads(self.jsonrpc()))
-        cherrypy.request = fake_request(
-            'POST', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-        self.assertEqual(
-            json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
-            json.loads(self.jsonrpc()))
-        cherrypy.request = fake_request(
-            'PUTT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-        self.assertEqual('Method "PUTT" not allowed.', self.jsonrpc())
+        def test_invalid_method(self):
+            cherrypy.request = fake_request(
+                'PUT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+            self.assertEqual(
+                json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+                json.loads(self.jsonrpc()))
+            cherrypy.request = fake_request(
+                'POST', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+            self.assertEqual(
+                json.loads('{"jsonrpc": "2.0", "id": 1, "result": "pong"}'),
+                json.loads(self.jsonrpc()))
+            cherrypy.request = fake_request(
+                'PUTT', '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+            self.assertEqual('Method "PUTT" not allowed.', self.jsonrpc())
+except:
+    pass
