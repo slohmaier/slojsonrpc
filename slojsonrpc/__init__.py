@@ -25,7 +25,32 @@ import inspect
 import json
 import logging
 import traceback
+import urllib
 
+class SLOJSONRPCClient(object):
+    '''
+    Json RPC Client
+    '''
+    def __init__(self, url):
+        self._url = url
+
+    def call(self, method, params=None):
+        #create jsonrpc request
+        request = {
+            'jsonrpc': '2.0',
+            'method': method,
+            'id': 0
+        }
+
+        #add params if given
+        if params:
+            request['params'] = params
+
+        #make request
+        jsondata = json.dumps(request)
+        request = urllib.urlopen(self._url, data=jsondata)
+        #request.get_method = lambda: 'POST'
+        return request.read()
 
 def SLOJSONRPCNotification(fct):
     '''
@@ -33,7 +58,6 @@ def SLOJSONRPCNotification(fct):
     '''
     fct.__SLOJSONRPCNotification__ = True
     return fct
-
 
 class SLOJSONRPCError(BaseException):
     '''
@@ -94,7 +118,7 @@ class SLOJSONRPC(object):
         jsonrpc = SLOJSONRPC(sessionmaker)
     '''
 
-    def __init__(self, sessionmaker):
+    def __init__(self, sessionmaker=None):
         '''
         create a new SLOJSONRPC
 
@@ -257,7 +281,8 @@ class SLOJSONRPC(object):
         logging.debug('-----------------------------------------------')
 
         notification = False
-        session = self._sessionmaker()
+        if self._sessionmaker:
+            session = self._sessionmaker()
         try:
             #validate request
             if validate:
@@ -356,7 +381,7 @@ try:
     #mark as exposed for cherrypy
     SLOJSONRPC.exposed = True
 
-        #default handler for cherrypy
+    #default handler for cherrypy
     def __slojsonrpccall__(self):
         if cherrypy.request.method in ['POST', 'PUT']:
             return self.handle_string(cherrypy.request.body.read())
