@@ -12,10 +12,8 @@ build:
 
     - script:
         name: build
-        code: |-
-          python setup.py build
+        code: python setup.py build
 
     - script:
         name: test
-        code: |-
-          python setup.py test
+        code: python setup.py test
