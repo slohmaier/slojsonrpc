@@ -8,8 +8,6 @@ build:
         name: setup virtual environment
         install_wheel: false # Enable wheel to speed up builds (experimental)
 
-    - pip-install
-
     - script:
         name: build
         code: python setup.py build
